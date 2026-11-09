@@ -1,0 +1,24 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - if: runner.os == 'Linux'
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: "6.2"
+      - if: runner.os == 'Windows'
+        uses: compnerd/gha-setup-swift@v0.3.0
+        with:
+          branch: swift-6.2-release
+          tag: 6.2-RELEASE
+      - run: swift --version
+      - run: swift format lint --strict --recursive .
+      - run: swift build
+      - run: swift test
